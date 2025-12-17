@@ -253,24 +253,11 @@ The sample data for this POC was generated using **ChatGPT** to create realistic
 
 - **Property IDs** (unique identifiers)
 - **Property Names** (descriptive titles)
-- **Property Types** (Villa, Apartment, Penthouse, etc.)
 - **Locations** (neighborhoods/districts)
-- **Cities** (Mumbai, Delhi, Bangalore, etc.)
 - **Prices** (in Indian Rupees)
-- **Bedrooms** (BHK count)
-- **Area** (square feet)
 - **Booking Links** (example URLs)
 - **Descriptions** (detailed property information)
 
-### Sample Data Format
-
-The CSV/Excel files should follow this structure:
-
-```csv
-Property ID,Name,Type,Location,City,Price,Bedrooms,Area,Booking Link,Description
-P001,Luxury Villa,Villa,Andheri,Mumbai,15000000,4,2500 sqft,https://book.example.com/p001,Beautiful villa with garden
-P002,Modern Apartment,Apartment,Bandra,Mumbai,8000000,3,1800 sqft,https://book.example.com/p002,Sea-facing apartment
-```
 
 ### Data Ingestion Process
 
@@ -295,10 +282,10 @@ The ingestion pipeline follows these steps:
      ```
      Property ID: P001
      Name: Luxury Villa
-     Type: Villa
      Location: Andheri
-     City: Mumbai
-     Price: 15000000
+     Description : Luxury 4BHK villas with private garden and clubhouse amenities
+     Price: 15000000 | Villa
+     Booking / Showing Link : https://example.com/green-view-apartments
      ...
      ```
 
@@ -398,94 +385,3 @@ Data sources are stored in `backend/app/data/data_sources.json`:
    - "Send me the booking link for property X"
 
 3. The AI will retrieve relevant property data and provide accurate responses based on the ingested data.
-
-## 🔌 API Endpoints
-
-### Data Sources
-
-- `GET /api/data-sources` - List all data sources
-- `POST /api/data-sources` - Add new data source
-  ```json
-  {
-    "url": "https://raw.githubusercontent.com/..."
-  }
-  ```
-- `GET /api/data-sources/{id}` - Get specific data source
-- `DELETE /api/data-sources/{id}` - Delete data source
-
-### Ingestion
-
-- `POST /api/ingest` - Trigger data ingestion for all pending/processing sources
-
-### Chat
-
-- `POST /api/chat` - Send chat message
-  ```json
-  {
-    "message": "Show me properties in Mumbai"
-  }
-  ```
-  Response:
-  ```json
-  {
-    "response": "Here are the properties in Mumbai..."
-  }
-  ```
-
-## 🔬 Technical Implementation
-
-### RAG Pipeline
-
-#### Data Ingestion
-
-1. **Fetch files** from GitHub URLs using `aiohttp`
-2. **Parse CSV/Excel** using Python's `csv` module and `openpyxl`
-3. **Convert rows** to structured text
-4. **Chunk text** with overlap (500 tokens, 50 overlap) using `tiktoken`
-5. **Generate embeddings** using OpenAI `text-embedding-3-small`
-6. **Store in Pinecone** with metadata
-
-#### Query Processing
-
-1. **Convert user query** to embedding using OpenAI
-2. **Search Pinecone** for top-k similar chunks (default: 5)
-3. **Retrieve relevant context** with metadata
-
-#### Response Generation
-
-1. **Pass context and query** to GPT-4o-mini
-2. **Generate grounded response** based on retrieved context
-3. **Return to user**
-
-### Key Design Decisions
-
-- **Asynchronous Processing:** Background tasks ensure API remains responsive
-- **Batch Processing:** All sources processed concurrently
-- **Error Isolation:** One source failure doesn't block others
-- **Metadata Storage:** Property fields stored as Pinecone metadata
-- **Chunking Strategy:** Overlap ensures context continuity
-- **Status Tracking:** Real-time updates for user feedback
-
-## 🛠️ Development Notes
-
-- Backend runs on port `8000` by default
-- Frontend runs on port `5173` by default (Vite)
-- CORS is configured for `http://localhost:3000` and `http://localhost:5173`
-- Pinecone index is auto-created if it doesn't exist
-- Data sources file is auto-created on first run
-
-## 📝 License
-
-This is a Proof of Concept (POC) project.
-
-## 🤝 Contributing
-
-This is a POC project. For production use, consider:
-- Adding authentication/authorization
-- Replacing file-based storage with a database
-- Adding data validation and deduplication
-- Implementing rate limiting
-- Adding comprehensive error handling
-- Adding unit and integration tests
-- Supporting more data source types (S3, Google Drive, etc.)
-
